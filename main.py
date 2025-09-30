@@ -307,24 +307,24 @@ def main(args):
                 utils.save_on_master(weights, checkpoint_path)
                 
         # eval
-        # test_stats, coco_evaluator = evaluate(
-        #     model, criterion, postprocessors, data_loader_val, base_ds, device, args.output_dir,
-        #     wo_class_error=wo_class_error, args=args, logger=(logger if args.save_log else None)
-        # )
-        # map_regular = test_stats['coco_eval_bbox'][0]
-        # _isbest = best_map_holder.update(map_regular, epoch, is_ema=False)
-        # if _isbest:
-        #     checkpoint_path = output_dir / 'checkpoint_best_regular.pth'
-        #     utils.save_on_master({
-        #         'model': model_without_ddp.state_dict(),
-        #         'optimizer': optimizer.state_dict(),
-        #         'lr_scheduler': lr_scheduler.state_dict(),
-        #         'epoch': epoch,
-        #         'args': args,
-        #     }, checkpoint_path)
+        test_stats, coco_evaluator = evaluate(
+            model, criterion, postprocessors, data_loader_val, base_ds, device, args.output_dir,
+            wo_class_error=wo_class_error, args=args, logger=(logger if args.save_log else None)
+        )
+        map_regular = test_stats['coco_eval_bbox'][0]
+        _isbest = best_map_holder.update(map_regular, epoch, is_ema=False)
+        if _isbest:
+            checkpoint_path = output_dir / 'checkpoint_best_regular.pth'
+            utils.save_on_master({
+                'model': model_without_ddp.state_dict(),
+                'optimizer': optimizer.state_dict(),
+                'lr_scheduler': lr_scheduler.state_dict(),
+                'epoch': epoch,
+                'args': args,
+            }, checkpoint_path)
         log_stats = {
             **{f'train_{k}': v for k, v in train_stats.items()},
-            # **{f'test_{k}': v for k, v in test_stats.items()},
+            **{f'test_{k}': v for k, v in test_stats.items()},
         }
 
 
