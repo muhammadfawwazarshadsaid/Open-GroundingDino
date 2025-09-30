@@ -1,0 +1,18 @@
+{
+  "train": [
+    {
+      "root": "data/tugas-akhir/train/",
+      "anno": "data/tugas-akhir/annotations/train_odvg.jsonl",
+      "label_map": "data/tugas-akhir/config/label_map.json",
+      "dataset_mode": "odvg"
+    }
+  ],
+  "val": [
+    {
+      "root": "data/tugas-akhir/valid/",
+      "anno": "data/tugas-akhir/annotations/valid_odvg.jsonl",
+      "label_map": "data/tugas-akhir/config/label_map.json",
+      "dataset_mode": "odvg"
+    }
+  ]
+}
