@@ -6,5 +6,13 @@
       "label_map": "data/tugas-akhir/config/label_map.json",
       "dataset_mode": "coco"
     }
+  ],
+  "val": [
+    {
+      "root": "data/tugas-akhir/valid/",
+      "anno": "data/tugas-akhir/valid/_annotations.coco.json",
+      "label_map": "data/tugas-akhir/config/label_map.json",
+      "dataset_mode": "coco"
+    }
   ]
 }
