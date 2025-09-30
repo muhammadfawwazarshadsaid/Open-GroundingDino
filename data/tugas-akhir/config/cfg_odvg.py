@@ -1,3 +1,9 @@
+label_list = [
+    "Auxiliary", "Base Plate", "Box", "Connection Power Supply", 
+    "Door Handle Drawer", "Drawer Stopper", "Front Plate", "Handle Drawer",
+    "Index Mechanism", "Locking Mechanism", "Mounting Component", 
+    "Push Button Index Mechanism", "Roda Drawer", "Support Outgoing", "Top Plate"
+]
 data_aug_scales = [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]
 data_aug_max_size = 1333
 data_aug_scales2_resize = [400, 500, 600]
