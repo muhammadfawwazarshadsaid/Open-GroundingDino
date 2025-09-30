@@ -68,6 +68,8 @@ def to_device(item, device):
         return [to_device(i, device) for i in item]
     elif isinstance(item, dict):
         return {k: to_device(v, device) for k,v in item.items()}
+    elif isinstance(item, str): 
+        return item
     else:
         raise NotImplementedError("Call Shilong if you use other containers! type: {}".format(type(item)))
 
