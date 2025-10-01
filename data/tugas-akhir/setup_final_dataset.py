@@ -1,78 +1,134 @@
-import os
 import json
-import jsonlines
+import os
+from collections import Counter
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 # --- CONFIG ---
-train_src = "annotations/train_odvg.jsonl"     # file lama
-train_dst = "annotations/train_odvg_clean.jsonl"  # output bersih
-val_src   = "valid/_annotations.coco.json"        # file asli
-val_dst   = "valid/_annotations.coco_clean.json"  # output bersih
+train_src = "train/_annotations.coco.json"
+val_src   = "valid/_annotations.coco.json"
+
+train_dst = "train/_annotations.coco_clean.json"
+val_dst   = "valid/_annotations.coco_clean.json"
+
 label_map = "config/label_map.json"
 
-# --- 1. Convert train (detection.instances -> annotations.text)
-print("🔄 Converting train annotations...")
-with jsonlines.open(train_src) as reader, jsonlines.open(train_dst, mode="w") as writer:
-    for obj in reader:
-        anns = []
-        if "detection" in obj and "instances" in obj["detection"]:
-            for inst in obj["detection"]["instances"]:
-                anns.append({
-                    "bbox": inst["bbox"],
-                    "text": inst.get("category")  # ambil nama kelas
-                })
-        elif "annotations" in obj:  # kalau udah format baru
-            anns = obj["annotations"]
-
-        writer.write({
-            "filename": obj["filename"],
-            "height": obj.get("height", None),
-            "width": obj.get("width", None),
-            "annotations": anns
-        })
-print(f"✅ Train converted → {train_dst}")
-
-# --- 2. Clean val (hapus bogus class 'tugas-akhir')
-print("🔄 Cleaning val annotations...")
-with open(val_src, "r") as f:
-    val_data = json.load(f)
-
-val_classes = [cat["name"] for cat in val_data["categories"]]
-if "tugas-akhir" in val_classes:
-    print("⚠️ Removing bogus class 'tugas-akhir'")
-    val_classes = [c for c in val_classes if c != "tugas-akhir"]
-    val_data["categories"] = [{"id": i+1, "name": c} for i, c in enumerate(val_classes)]
-
-with open(val_dst, "w") as f:
-    json.dump(val_data, f, indent=2)
-print(f"✅ Val cleaned → {val_dst}")
-
-# --- 3. Validate konsistensi dengan label_map
-print("🔎 Validating consistency...")
+# --- 1. Load label_map
 with open(label_map, "r") as f:
     label_map_dict = json.load(f)
-id2label = {int(k): v for k, v in label_map_dict.items()}
-label_set = set(id2label.values())
+valid_classes = set(label_map_dict.values())
+print(f"✅ Loaded {len(valid_classes)} valid classes from label_map.json")
 
-train_classes = set()
-with jsonlines.open(train_dst) as reader:
-    for obj in reader:
-        for ann in obj.get("annotations", []):
-            if "text" in ann:
-                train_classes.add(ann["text"])
+def clean_coco(src, dst, valid_classes):
+    with open(src, "r") as f:
+        data = json.load(f)
 
-val_classes = [cat["name"] for cat in val_data["categories"]]
-val_set = set(val_classes)
+    before = len(data["categories"])
+    cats_before = [c["name"] for c in data["categories"]]
 
-print("Train classes found:", sorted(train_classes))
-print("Val classes found:", sorted(val_set))
+    # filter kategori bogus
+    data["categories"] = [c for c in data["categories"] if c["name"] in valid_classes]
+    after = len(data["categories"])
+    cats_after = [c["name"] for c in data["categories"]]
 
-missing_in_train = label_set - train_classes
-missing_in_val = label_set - val_set
+    # filter annotations yang kelasnya gak ada di label_map
+    valid_ids = {c["id"] for c in data["categories"]}
+    data["annotations"] = [a for a in data["annotations"] if a["category_id"] in valid_ids]
 
-if missing_in_train:
-    print("❌ Missing in train:", missing_in_train)
-if missing_in_val:
-    print("❌ Missing in val:", missing_in_val)
+    with open(dst, "w") as f:
+        json.dump(data, f, indent=2)
 
-if not missing_in_train and not missing_in_val:
-    print("✅ Semua kelas konsisten antara TRAIN, VAL, dan LABEL MAP!")
+    print(f"\n🧹 Cleaned {os.path.basename(src)} → {os.path.basename(dst)}")
+    print(f"   Categories: {before} → {after}")
+    print(f"   Removed: {set(cats_before) - set(cats_after)}")
+    print(f"   Annotations left: {len(data['annotations'])}")
+
+    return dst
+
+# --- Clean both
+train_clean = clean_coco(train_src, train_dst, valid_classes)
+val_clean   = clean_coco(val_src, val_dst, valid_classes)
+
+print("\n✅ All done! Train & Val COCO cleaned")
+
+# --- 2. Distribusi bbox
+def load_distribution(path):
+    with open(path, "r") as f:
+        data = json.load(f)
+    id2name = {c["id"]: c["name"] for c in data["categories"]}
+    counter = Counter()
+    for ann in data["annotations"]:
+        cid = ann["category_id"]
+        counter[id2name.get(cid, "UNKNOWN")] += 1
+    return counter
+
+train_dist = load_distribution(train_clean)
+val_dist = load_distribution(val_clean)
+
+# --- 3. Tabel ringkasan
+classes = sorted(set(train_dist.keys()) | set(val_dist.keys()))
+rows = []
+for c in classes:
+    t = train_dist.get(c, 0)
+    v = val_dist.get(c, 0)
+    total = t + v
+    t_pct = (t/total*100) if total > 0 else 0
+    v_pct = (v/total*100) if total > 0 else 0
+    rows.append([c, t, v, f"{t_pct:.1f}%", f"{v_pct:.1f}%"])
+
+df = pd.DataFrame(rows, columns=["Class", "Train Count", "Val Count", "Train %", "Val %"])
+print("\n=== Summary Table ===")
+print(df.to_string(index=False))
+
+# --- 4. Plot side-by-side absolute
+def plot_side_by_side(train_dist, val_dist, title):
+    train_vals = [train_dist.get(c, 0) for c in classes]
+    val_vals = [val_dist.get(c, 0) for c in classes]
+
+    x = np.arange(len(classes))
+    width = 0.35
+
+    plt.figure(figsize=(14,6))
+    plt.bar(x - width/2, train_vals, width, label="Train", color="steelblue")
+    plt.bar(x + width/2, val_vals, width, label="Val", color="orange")
+
+    plt.xticks(x, classes, rotation=75, ha="right")
+    plt.title(title)
+    plt.ylabel("Jumlah bbox")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+plot_side_by_side(train_dist, val_dist, "Distribusi Anotasi per Kelas (Train vs Val)")
+
+# --- 5. Plot persentase
+def plot_percentage(train_dist, val_dist, title):
+    percentages = []
+    for c in classes:
+        t = train_dist.get(c, 0)
+        v = val_dist.get(c, 0)
+        total = t + v
+        if total == 0:
+            percentages.append((0,0))
+        else:
+            percentages.append((t/total*100, v/total*100))
+
+    x = np.arange(len(classes))
+    width = 0.35
+
+    train_pct = [p[0] for p in percentages]
+    val_pct = [p[1] for p in percentages]
+
+    plt.figure(figsize=(14,6))
+    plt.bar(x - width/2, train_pct, width, label="Train %", color="steelblue")
+    plt.bar(x + width/2, val_pct, width, label="Val %", color="orange")
+
+    plt.xticks(x, classes, rotation=75, ha="right")
+    plt.title(title)
+    plt.ylabel("Persentase (%)")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+plot_percentage(train_dist, val_dist, "Proporsi Persentase Train vs Val per Kelas")

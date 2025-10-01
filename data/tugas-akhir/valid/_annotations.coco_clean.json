@@ -17,63 +17,78 @@
   "categories": [
     {
       "id": 1,
-      "name": "Auxiliary"
+      "name": "Auxiliary",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 2,
-      "name": "Base Plate"
+      "name": "Base Plate",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 3,
-      "name": "Box"
+      "name": "Box",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 4,
-      "name": "Connection Power Supply"
+      "name": "Connection Power Supply",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 5,
-      "name": "Door Handle Drawer"
+      "name": "Door Handle Drawer",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 6,
-      "name": "Drawer Stopper"
+      "name": "Drawer Stopper",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 7,
-      "name": "Front Plate"
+      "name": "Front Plate",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 8,
-      "name": "Handle Drawer"
+      "name": "Handle Drawer",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 9,
-      "name": "Index Mechanism"
+      "name": "Index Mechanism",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 10,
-      "name": "Locking Mechanism"
+      "name": "Locking Mechanism",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 11,
-      "name": "Mounting Component"
+      "name": "Mounting Component",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 12,
-      "name": "Push Button Index Mechanism"
+      "name": "Push Button Index Mechanism",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 13,
-      "name": "Roda Drawer"
+      "name": "Roda Drawer",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 14,
-      "name": "Support Outgoing"
+      "name": "Support Outgoing",
+      "supercategory": "tugas-akhir"
     },
     {
       "id": 15,
-      "name": "Top Plate"
+      "name": "Top Plate",
+      "supercategory": "tugas-akhir"
     }
   ],
   "images": [
