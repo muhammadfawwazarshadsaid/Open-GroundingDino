@@ -2,15 +2,15 @@
   "train": [
     {
       "root": "data/tugas-akhir/train/",
-      "anno": "data/tugas-akhir/train/_annotations.coco_clean.json",
+      "anno": "data/tugas-akhir/annotations/train_odvg.jsonl",
       "label_map": "data/tugas-akhir/config/label_map.json",
-      "dataset_mode": "coco"
+      "dataset_mode": "odvg"
     }
   ],
   "val": [
     {
       "root": "data/tugas-akhir/valid/",
-      "anno": "data/tugas-akhir/valid/_annotations.coco_clean.json",
+      "anno": "data/tugas-akhir/valid/_annotations.coco.json",
       "label_map": "data/tugas-akhir/config/label_map.json",
       "dataset_mode": "coco"
     }
