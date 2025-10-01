@@ -10,7 +10,7 @@
   "val": [
     {
       "root": "data/tugas-akhir/valid/",
-      "anno": "data/tugas-akhir/valid/_annotations.coco.json",
+      "anno": "data/tugas-akhir/annotations/test_odvg.jsonl",
       "label_map": "data/tugas-akhir/config/label_map.json",
       "dataset_mode": "coco"
     }
