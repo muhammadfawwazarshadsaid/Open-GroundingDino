@@ -33,7 +33,7 @@ dn_label_noise_ratio = 0.5
 dn_label_coef = 1.0
 dn_bbox_coef = 1.0
 embed_init_tgt = True
-dn_labelbook_size = 15
+dn_labelbook_size = 91
 max_text_len = 256
 text_encoder_type = "bert-base-uncased"
 use_text_enhancer = True
@@ -45,10 +45,10 @@ text_dropout = 0.0
 fusion_dropout = 0.0
 fusion_droppath = 0.1
 sub_sentence_present = True
-max_labels = 50                               # pos + neg
+max_labels = 80                               # pos + neg
 lr = 0.0001                                   # base learning rate
 backbone_freeze_keywords = None               # only for gdino backbone
-freeze_keywords = ['bert']                    # for whole model, e.g. ['backbone.0', 'bert'] for freeze visual encoder and text encoder
+freeze_keywords = None                        # for whole model, e.g. ['backbone.0', 'bert'] for freeze visual encoder and text encoder
 lr_backbone = 1e-05                           # specific learning rate
 lr_backbone_names = ['backbone.0', 'bert']
 lr_linear_proj_mult = 1e-05
@@ -56,13 +56,13 @@ lr_linear_proj_names = ['ref_point_head', 'sampling_offsets']
 weight_decay = 0.0001
 param_dict_type = 'ddetr_in_mmdet'
 ddetr_lr_param = False
-epochs = 15
-lr_drop = 4
-save_checkpoint_interval = 1
+epochs = 30
+lr_drop = 10
+save_checkpoint_interval = 10
 clip_max_norm = 0.1
 onecyclelr = False
 multi_step_lr = False
-lr_drop_list = [4, 8]
+lr_drop_list = [10, 20]
 frozen_weights = None
 dilation = False
 pdetr3_bbox_embed_diff_each_layer = False
@@ -107,18 +107,8 @@ matcher_type = 'HungarianMatcher'
 decoder_module_seq = ['sa', 'ca', 'ffn']
 nms_iou_threshold = -1
 dec_pred_class_embed_share = True
-
-
 match_unstable_error = True
-use_ema = False
-ema_decay = 0.9997
-ema_epoch = 0
 use_detached_boxes_dec_out = False
-use_coco_eval = False
-label_list = [
-    "Auxiliary", "Base Plate", "Box", "Connection Power Supply", 
-    "Door Handle Drawer", "Drawer Stopper", "Front Plate", "Handle Drawer",
-    "Index Mechanism", "Locking Mechanism", "Mounting Component", 
-    "Push Button Index Mechanism", "Roda Drawer", "Support Outgoing", "Top Plate"
-]
 dn_scalar = 100
+
+use_coco_eval = True
