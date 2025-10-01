@@ -40,7 +40,7 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
     for samples, targets in metric_logger.log_every(data_loader, print_freq, header, logger=logger):
 
         samples = samples.to(device)
-        captions = [t["caption"] for t in targets]
+        captions = [t["caption"] for t in targets if "caption" in t] if "caption" in targets[0] else None
         cap_list = [t["cap_list"] for t in targets]
         targets = [{k: v.to(device) for k, v in t.items() if torch.is_tensor(v)} for t in targets]
         with torch.cuda.amp.autocast(enabled=args.amp):
