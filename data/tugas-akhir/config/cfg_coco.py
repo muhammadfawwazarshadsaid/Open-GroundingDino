@@ -33,7 +33,9 @@ dn_label_noise_ratio = 0.5
 dn_label_coef = 1.0
 dn_bbox_coef = 1.0
 embed_init_tgt = True
-dn_labelbook_size = 91
+dn_labelbook_size = 15
+max_labels = 15
+use_coco_eval = False
 max_text_len = 256
 text_encoder_type = "bert-base-uncased"
 use_text_enhancer = True
@@ -45,7 +47,6 @@ text_dropout = 0.0
 fusion_dropout = 0.0
 fusion_droppath = 0.1
 sub_sentence_present = True
-max_labels = 80                               # pos + neg
 lr = 0.0001                                   # base learning rate
 backbone_freeze_keywords = None               # only for gdino backbone
 freeze_keywords = None                        # for whole model, e.g. ['backbone.0', 'bert'] for freeze visual encoder and text encoder
@@ -110,5 +111,10 @@ dec_pred_class_embed_share = True
 match_unstable_error = True
 use_detached_boxes_dec_out = False
 dn_scalar = 100
-
-use_coco_eval = True
+label_list = [
+    "Auxiliary", "Base Plate", "Box", "Connection Power Supply", 
+    "Door Handle Drawer", "Drawer Stopper", "Front Plate", "Handle Drawer",
+    "Index Mechanism", "Locking Mechanism", "Mounting Component", 
+    "Push Button Index Mechanism", "Roda Drawer", "Support Outgoing", "Top Plate"
+]
+use_coco_eval = False
