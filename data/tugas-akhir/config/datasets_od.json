@@ -3,7 +3,7 @@
     {
       "root": "data/tugas-akhir/train/",
       "anno": "data/tugas-akhir/annotations/train_odvg_final.jsonl",
-      "label_map": "data/tugas-akhir/config/label_map_final.json",
+      "label_map": "data/tugas-akhir/config/label_map_runtime.json",
       "dataset_mode": "odvg"
     }
   ],
@@ -11,7 +11,7 @@
     {
       "root": "data/tugas-akhir/valid/",
       "anno": "data/tugas-akhir/valid/_annotations.coco_final.json",
-      "label_map": "data/tugas-akhir/config/label_map_final.json",
+      "label_map": "data/tugas-akhir/config/label_map_runtime.json",
       "dataset_mode": "coco"
     }
   ]
