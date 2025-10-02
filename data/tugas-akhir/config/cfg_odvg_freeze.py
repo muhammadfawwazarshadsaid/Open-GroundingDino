@@ -18,7 +18,7 @@ backbone = 'swin_T_224_1k'
 position_embedding = 'sine'
 pe_temperatureH = 20
 pe_temperatureW = 20
-return_interm_indices = [1, 2, 3]  # <--- Parameter yang hilang sudah ditambahkan
+return_interm_indices = [1, 2, 3]
 num_feature_levels = 4
 batch_norm_type = 'FrozenBatchNorm2d'
 
@@ -80,14 +80,14 @@ matcher_type = 'HungarianMatcher'
 
 # --- Pengaturan Training & Optimizer ---
 epochs = 15
-lr = 2e-5  # <--- Learning rate diturunkan
-lr_backbone = 1e-6 # <--- Disesuaikan karena backbone di-freeze
+lr = 2e-5
+lr_backbone = 1e-6
 lr_backbone_names = ['backbone.0', 'bert']
 lr_linear_proj_mult = 1e-5
 lr_linear_proj_names = ['ref_point_head', 'sampling_offsets']
 weight_decay = 0.0001
 lr_drop = 4
-lr_drop_list = [8, 12] # Jadwal penurunan LR diubah
+lr_drop_list = [8, 12]
 save_checkpoint_interval = 1
 clip_max_norm = 0.1
 param_dict_type = 'ddetr_in_mmdet'
@@ -95,7 +95,8 @@ ddetr_lr_param = False
 onecyclelr = False
 multi_step_lr = False
 frozen_weights = None
-freeze_keywords = ['backbone.0', 'bert'] # <--- Freeze backbone visual & teks
+backbone_freeze_keywords = None  # <--- Parameter yang hilang sudah ditambahkan
+freeze_keywords = ['backbone.0', 'bert'] 
 
 # --- Pengaturan Lainnya ---
 max_labels = 50
