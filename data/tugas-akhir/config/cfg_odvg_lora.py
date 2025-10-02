@@ -6,14 +6,14 @@
 train_dataset = dict(
     root="data/tugas-akhir/train/",
     anno="data/tugas-akhir/annotations/train_odvg_final.jsonl",
-    label_map="data/tugas-akhir/config/label_map_final.json",
+    label_map="data/tugas-akhir/config/label_map_runtime.json",
     dataset_mode="odvg",
 )
 
 val_dataset = dict(
     root="data/tugas-akhir/valid/",
     anno="data/tugas-akhir/valid/_annotations.coco_final.json",
-    label_map="data/tugas-akhir/config/label_map_final.json",
+    label_map="data/tugas-akhir/config/label_map_runtime.json",
     dataset_mode="coco",
 )
 
@@ -26,7 +26,7 @@ data_aug_scale_overlap = None
 
 # Training
 batch_size = 2                 # kecil biar aman di T4
-epochs = 35                    # lebih panjang biar LoRA sempet converge
+epochs = 35                    # lebih panjang buat LoRA converge
 lr = 1e-4                      # global LR
 lr_drop_list = [20, 30]        # schedule turunin LR
 
