@@ -1,7 +1,3 @@
-# =======================
-# Config: cfg_odvg_lora.py
-# Dataset kecil (500 img), Colab T4
-# =======================
 
 # Augmentasi
 data_aug_scales = [480, 512, 544, 576, 608, 640]
@@ -12,7 +8,7 @@ data_aug_scale_overlap = None
 
 # Training
 batch_size = 2     # T4 aman di batch kecil
-epochs = 35        # lebih panjang dari full fine-tune
+epochs = 35        # lumayan panjang biar LoRA sempet converge
 lr = 1e-4          # global LR
 lr_drop_list = [20, 30]
 
@@ -25,19 +21,6 @@ enc_layers = 6
 dec_layers = 6
 nheads = 8
 num_queries = 900
-
-# LoRA
-use_lora = True
-lora_r = 8
-lora_alpha = 16
-lora_dropout = 0.05
-
-# Freeze backbone + BERT (biar hemat RAM)
-freeze_keywords = ['backbone', 'bert']
-lr_backbone = 1e-6
-lr_backbone_names = ['backbone.0', 'bert']
-lr_linear_proj_mult = 1e-6
-lr_linear_proj_names = ['ref_point_head', 'sampling_offsets']
 
 # Loss
 set_cost_class = 1.0
