@@ -213,7 +213,7 @@ class GroundingDINO(nn.Module):
     def init_ref_points(self, use_num_queries):
         self.refpoint_embed = nn.Embedding(use_num_queries, self.query_dim)
 
-    def forward(self, *, samples: NestedTensor, targets: List = None, **kw):
+    def forward(self, *, samples: NestedTensor, targets: Optional[List] = None, captions: Optional[List] = None, **kwargs):
         """The forward expects a NestedTensor, which consists of:
            - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
            - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
