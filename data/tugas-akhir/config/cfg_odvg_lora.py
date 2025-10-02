@@ -26,7 +26,7 @@ data_aug_scale_overlap = None
 
 # Training
 batch_size = 2                 # kecil biar aman di T4
-epochs = 35                    # lebih panjang buat LoRA converge
+epochs = 35                    # lebih panjang biar LoRA sempet converge
 lr = 1e-4                      # global LR
 lr_drop_list = [20, 30]        # schedule turunin LR
 
@@ -34,6 +34,8 @@ lr_drop_list = [20, 30]        # schedule turunin LR
 modelname = 'groundingdino'
 backbone = 'swin_T_224_1k'
 position_embedding = 'sine'
+pe_temperatureH = 20
+pe_temperatureW = 20
 hidden_dim = 256
 enc_layers = 6
 dec_layers = 6
