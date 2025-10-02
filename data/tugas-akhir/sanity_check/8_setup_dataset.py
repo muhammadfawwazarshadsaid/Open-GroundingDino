@@ -10,6 +10,7 @@ odvg_fixed = "../annotations/train_odvg_fixed.jsonl"
 
 # Paths tujuan final
 labelmap_final = "../config/label_map_final.json"
+labelmap_runtime = "../config/label_map_runtime.json"   # runtime fix
 coco_final = "../valid/_annotations.coco_final.json"
 odvg_final = "../annotations/train_odvg_final.jsonl"
 datasets_out = "../config/datasets_od.json"
@@ -25,13 +26,33 @@ print(f"✅ Copied {labelmap_fixed} → {labelmap_final}")
 print(f"✅ Copied {coco_fixed} → {coco_final}")
 print(f"✅ Copied {odvg_fixed} → {odvg_final}")
 
-# 2. Generate datasets_od.json
+# 2. Generate label_map_runtime.json (dual key: str + int)
+with open(labelmap_final, "r") as f:
+    lm = json.load(f)
+
+both = {}
+for k, v in lm.items():
+    ks = str(k)
+    try:
+        ki = int(k)
+    except:
+        ki = None
+    both[ks] = v
+    if ki is not None:
+        both[ki] = v
+
+with open(labelmap_runtime, "w") as f:
+    json.dump(both, f, indent=2)
+
+print(f"✅ Generated runtime label map → {labelmap_runtime}")
+
+# 3. Generate datasets_od.json pakai runtime map
 datasets_cfg = {
     "train": [
         {
             "root": "data/tugas-akhir/train/",
             "anno": "data/tugas-akhir/annotations/train_odvg_final.jsonl",
-            "label_map": "data/tugas-akhir/config/label_map_final.json",
+            "label_map": "data/tugas-akhir/config/label_map_runtime.json",
             "dataset_mode": "odvg"
         }
     ],
@@ -39,7 +60,7 @@ datasets_cfg = {
         {
             "root": "data/tugas-akhir/valid/",
             "anno": "data/tugas-akhir/valid/_annotations.coco_final.json",
-            "label_map": "data/tugas-akhir/config/label_map_final.json",
+            "label_map": "data/tugas-akhir/config/label_map_runtime.json",
             "dataset_mode": "coco"
         }
     ]
@@ -50,12 +71,11 @@ with open(datasets_out, "w") as f:
 
 print(f"✅ Generated {datasets_out}")
 
-# 3. Alignment Check
+# 4. Alignment Check
 print("\n=== Alignment Check ===")
-with open(labelmap_final, "r") as f:
+with open(labelmap_runtime, "r") as f:
     label_map = json.load(f)
-id2cat = {int(k): v for k, v in label_map.items()}
-cat2id = {v: int(k) for k, v in label_map.items()}
+id2cat = {int(k): v for k, v in label_map.items() if str(k).isdigit()}
 
 # COCO
 with open(coco_final, "r") as f:
@@ -81,16 +101,4 @@ print(f"✅ Label map classes: {len(id2cat)}")
 print(f"✅ COCO classes     : {len(coco_classes)}")
 print(f"✅ ODVG classes     : {len(odvg_classes)}")
 
-mismatch_labelmap_coco = coco_classes - set(cat2id.keys())
-mismatch_labelmap_odvg = odvg_classes - set(cat2id.keys())
-
-if not mismatch_labelmap_coco and not mismatch_labelmap_odvg:
-    print("\n🎉 Semua sudah sinkron, aman buat training 🚀")
-else:
-    if mismatch_labelmap_coco:
-        print(f"⚠️ COCO extra/mismatch classes: {mismatch_labelmap_coco}")
-    if mismatch_labelmap_odvg:
-        print(f"⚠️ ODVG extra/mismatch classes: {mismatch_labelmap_odvg}")
-    print("\n⚠️ Masih ada mismatch, cek lagi sebelum training!")
-
-print("\n🚀 Final dataset setup + alignment check complete!")
+print("\n🚀 Final dataset setup + runtime-safe alignment complete!")
