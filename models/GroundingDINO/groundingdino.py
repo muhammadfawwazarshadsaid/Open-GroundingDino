@@ -213,7 +213,10 @@ class GroundingDINO(nn.Module):
     def init_ref_points(self, use_num_queries):
         self.refpoint_embed = nn.Embedding(use_num_queries, self.query_dim)
 
-    def forward(self, samples: NestedTensor, targets: List = None, **kw):
+    # =================================================================================================
+    # >>>> PERUBAHAN DI SINI <<<<
+    # =================================================================================================
+    def forward(self, samples: NestedTensor = None, targets: List = None, captions: List = None, **kw):
         """The forward expects a NestedTensor, which consists of:
            - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
            - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
@@ -228,6 +231,10 @@ class GroundingDINO(nn.Module):
            - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
                             dictionnaries containing the two above keys for each decoder layer.
         """
+        # Tambahan untuk kompatibilitas dengan LoRA/PEFT
+        if samples is None and "inputs" in kw:
+            samples = kw.pop("inputs")
+            
         if targets is None:
             captions = kw["captions"]
         else:
@@ -852,6 +859,4 @@ def create_positive_map(tokenized, tokens_positive,cat_list,caption):
             continue
         # assert beg_pos is not None and end_pos is not None
         positive_map[j,beg_pos: end_pos + 1].fill_(1)
-    return positive_map 
-
-
+    return positive_map
