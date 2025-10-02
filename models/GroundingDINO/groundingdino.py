@@ -15,7 +15,7 @@
 # Copyright (c) 2020 SenseTime. All Rights Reserved.
 # ------------------------------------------------------------------------
 import copy
-from typing import List
+from typing import List, Optional 
 
 import torch
 import torch.nn.functional as F
