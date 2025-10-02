@@ -26,7 +26,7 @@ data_aug_scale_overlap = None
 
 # Training
 batch_size = 2
-epochs = 35                    # LoRA converge lebih lama
+epochs = 35
 lr = 1e-4
 lr_drop_list = [20, 30]
 
@@ -38,8 +38,6 @@ backbone = 'swin_T_224_1k'
 position_embedding = 'sine'
 pe_temperatureH = 20
 pe_temperatureW = 20
-
-# Backbone outputs
 return_interm_indices = [1, 2, 3]
 
 # Transformer & decoder head
@@ -62,7 +60,7 @@ dec_pred_bbox_embed_share = True
 batch_norm_type = 'FrozenBatchNorm2d'
 masks = False
 
-# Loss weights
+# Loss
 set_cost_class = 1.0
 set_cost_bbox = 5.0
 set_cost_giou = 2.0
@@ -81,16 +79,17 @@ use_text_cross_attention = True
 weight_decay = 1e-4
 clip_max_norm = 0.1
 
-# Freeze backbone & bert biar LoRA doang yg update
-freeze_keywords = ['backbone', 'bert']
+# Freeze
+backbone_freeze_keywords = None
+freeze_keywords = ['backbone', 'bert']   # LoRA: backbone & bert dibekukan
 lr_backbone = 1e-6
 lr_linear_proj_mult = 1e-6
 
 # Eval
 use_coco_eval = False
 label_list = [
-    "Auxiliary", "Base Plate", "Box", "Connection Power Supply", 
+    "Auxiliary", "Base Plate", "Box", "Connection Power Supply",
     "Door Handle Drawer", "Drawer Stopper", "Front Plate", "Handle Drawer",
-    "Index Mechanism", "Locking Mechanism", "Mounting Component", 
+    "Index Mechanism", "Locking Mechanism", "Mounting Component",
     "Push Button Index Mechanism", "Roda Drawer", "Support Outgoing", "Top Plate"
 ]
