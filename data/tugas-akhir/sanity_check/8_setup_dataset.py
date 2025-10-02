@@ -1,6 +1,7 @@
 import shutil
 import json
 import os
+import jsonlines
 
 # Paths sumber hasil fix
 labelmap_fixed = "../config/label_map_fixed.json"
@@ -48,4 +49,48 @@ with open(datasets_out, "w") as f:
     json.dump(datasets_cfg, f, indent=2)
 
 print(f"✅ Generated {datasets_out}")
-print("\n🚀 Final dataset setup complete! Pakai datasets_od.json untuk training.")
+
+# 3. Alignment Check
+print("\n=== Alignment Check ===")
+with open(labelmap_final, "r") as f:
+    label_map = json.load(f)
+id2cat = {int(k): v for k, v in label_map.items()}
+cat2id = {v: int(k) for k, v in label_map.items()}
+
+# COCO
+with open(coco_final, "r") as f:
+    coco = json.load(f)
+coco_classes = {c["name"] for c in coco["categories"]}
+
+# ODVG
+odvg_classes = set()
+with jsonlines.open(odvg_final) as reader:
+    for ex in reader:
+        if "detection" in ex:
+            dets = ex["detection"]
+            if isinstance(dets, dict) and "instances" in dets:
+                for det in dets["instances"]:
+                    if "category" in det:
+                        odvg_classes.add(det["category"])
+            elif isinstance(dets, list) and all(isinstance(d, dict) for d in dets):
+                for det in dets:
+                    if "category" in det:
+                        odvg_classes.add(det["category"])
+
+print(f"✅ Label map classes: {len(id2cat)}")
+print(f"✅ COCO classes     : {len(coco_classes)}")
+print(f"✅ ODVG classes     : {len(odvg_classes)}")
+
+mismatch_labelmap_coco = coco_classes - set(cat2id.keys())
+mismatch_labelmap_odvg = odvg_classes - set(cat2id.keys())
+
+if not mismatch_labelmap_coco and not mismatch_labelmap_odvg:
+    print("\n🎉 Semua sudah sinkron, aman buat training 🚀")
+else:
+    if mismatch_labelmap_coco:
+        print(f"⚠️ COCO extra/mismatch classes: {mismatch_labelmap_coco}")
+    if mismatch_labelmap_odvg:
+        print(f"⚠️ ODVG extra/mismatch classes: {mismatch_labelmap_odvg}")
+    print("\n⚠️ Masih ada mismatch, cek lagi sebelum training!")
+
+print("\n🚀 Final dataset setup + alignment check complete!")

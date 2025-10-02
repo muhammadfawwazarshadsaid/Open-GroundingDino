@@ -33,7 +33,7 @@ def fix_labelmap(path):
 
 labelmap_fixed, labelmap_dict = fix_labelmap(labelmap_path)
 id2cat = {int(k): v for k, v in labelmap_dict.items()}
-cat2id = {v: k for k, v in id2cat.items()}
+cat2id = {v: int(k) for k, v in labelmap_dict.items()}
 num_classes = len(id2cat)
 
 # Step 2. Fix COCO
@@ -44,11 +44,12 @@ def fix_coco(src, dst, cat2id):
     # Fix categories
     name2id = {}
     new_categories = []
-    for i, (cid, cname) in enumerate([(c["id"], c["name"]) for c in data["categories"]]):
+    for c in data["categories"]:
+        cname = c["name"]
         if cname in cat2id:
             new_id = cat2id[cname]
             new_categories.append({"id": new_id, "name": cname})
-            name2id[cid] = new_id
+            name2id[c["id"]] = new_id
 
     # Fix annotations
     new_annotations = []
@@ -80,17 +81,25 @@ def fix_odvg(src, dst, cat2id):
 
                 # case 1: dict with "instances"
                 if isinstance(dets, dict) and "instances" in dets:
+                    new_instances = []
                     for det in dets["instances"]:
-                        if "category" in det and det["category"] in cat2id:
+                        if det.get("category") in cat2id:
                             det["label"] = cat2id[det["category"]]
-                    fixed.append(ex)
+                            new_instances.append(det)
+                    if new_instances:
+                        ex["detection"]["instances"] = new_instances
+                        fixed.append(ex)
 
                 # case 2: list of dicts
                 elif isinstance(dets, list) and all(isinstance(d, dict) for d in dets):
+                    new_dets = []
                     for det in dets:
-                        if "category" in det and det["category"] in cat2id:
+                        if det.get("category") in cat2id:
                             det["label"] = cat2id[det["category"]]
-                    fixed.append(ex)
+                            new_dets.append(det)
+                    if new_dets:
+                        ex["detection"] = new_dets
+                        fixed.append(ex)
 
                 # case 3: list of strings
                 elif isinstance(dets, list) and all(isinstance(d, str) for d in dets):
