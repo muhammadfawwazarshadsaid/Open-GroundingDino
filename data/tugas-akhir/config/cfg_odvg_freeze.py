@@ -1,6 +1,5 @@
 # ================================================================================= #
-#                      Konfigurasi untuk GroundingDINO Model                        #
-#            (Direkonstruksi dari log training yang Anda berikan)                 #
+#        Konfigurasi GroundingDINO (Freeze Backbone & LR lebih rendah)              #
 # ================================================================================= #
 
 # --- Pengaturan Augmentasi & Dataset ---
@@ -11,7 +10,7 @@ data_aug_scales2_crop = [384, 600]
 data_aug_scale_overlap = None
 batch_size = 4
 masks = False
-use_coco_eval = False # Menggunakan evaluasi COCO untuk validasi
+use_coco_eval = False
 
 # --- Pengaturan Arsitektur Model ---
 modelname = 'groundingdino'
@@ -19,22 +18,23 @@ backbone = 'swin_T_224_1k'
 position_embedding = 'sine'
 pe_temperatureH = 20
 pe_temperatureW = 20
+return_interm_indices = [1, 2, 3]  # <--- Parameter yang hilang sudah ditambahkan
 num_feature_levels = 4
 batch_norm_type = 'FrozenBatchNorm2d'
-hidden_dim = 256
-dropout = 0.0
 
 # --- Pengaturan Transformer ---
+hidden_dim = 256
 enc_layers = 6
 dec_layers = 6
-pre_norm = False
 dim_feedforward = 2048
+dropout = 0.0
 nheads = 8
 num_queries = 900
 query_dim = 4
 num_patterns = 0
 enc_n_points = 4
 dec_n_points = 4
+pre_norm = False
 transformer_activation = 'relu'
 decoder_sa_type = 'sa'
 decoder_module_seq = ['sa', 'ca', 'ffn']
@@ -58,7 +58,7 @@ dn_label_noise_ratio = 0.5
 dn_label_coef = 1.0
 dn_bbox_coef = 1.0
 embed_init_tgt = True
-dn_labelbook_size = 15 # Sama dengan jumlah kelas
+dn_labelbook_size = 15
 dn_scalar = 100
 
 # --- Pengaturan Loss ---
@@ -80,23 +80,24 @@ matcher_type = 'HungarianMatcher'
 
 # --- Pengaturan Training & Optimizer ---
 epochs = 15
-lr = 0.0001
-lr_backbone = 1e-05
+lr = 2e-5  # <--- Learning rate diturunkan
+lr_backbone = 1e-6 # <--- Disesuaikan karena backbone di-freeze
 lr_backbone_names = ['backbone.0', 'bert']
-lr_linear_proj_mult = 1e-05
+lr_linear_proj_mult = 1e-5
 lr_linear_proj_names = ['ref_point_head', 'sampling_offsets']
 weight_decay = 0.0001
-lr_drop = 4 # Epoch di mana lr akan diturunkan
-lr_drop_list = [4, 8] # Alternatif untuk lr_drop, bisa dipakai salah satu
+lr_drop = 4
+lr_drop_list = [8, 12] # Jadwal penurunan LR diubah
+save_checkpoint_interval = 1
 clip_max_norm = 0.1
 param_dict_type = 'ddetr_in_mmdet'
 ddetr_lr_param = False
 onecyclelr = False
 multi_step_lr = False
 frozen_weights = None
-freeze_keywords = ['bert']
+freeze_keywords = ['backbone.0', 'bert'] # <--- Freeze backbone visual & teks
 
-# --- Pengaturan lainnya (banyak di antaranya adalah default) ---
+# --- Pengaturan Lainnya ---
 max_labels = 50
 dilation = False
 pdetr3_bbox_embed_diff_each_layer = False
@@ -134,8 +135,8 @@ use_detached_boxes_dec_out = False
 
 # --- Daftar Label/Kelas ---
 label_list = [
-    "Auxiliary", "Base Plate", "Box", "Connection Power Supply", 
+    "Auxiliary", "Base Plate", "Box", "Connection Power Supply",
     "Door Handle Drawer", "Drawer Stopper", "Front Plate", "Handle Drawer",
-    "Index Mechanism", "Locking Mechanism", "Mounting Component", 
+    "Index Mechanism", "Locking Mechanism", "Mounting Component",
     "Push Button Index Mechanism", "Roda Drawer", "Support Outgoing", "Top Plate"
 ]
