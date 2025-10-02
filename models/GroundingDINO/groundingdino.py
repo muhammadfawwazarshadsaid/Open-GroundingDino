@@ -213,23 +213,25 @@ class GroundingDINO(nn.Module):
     def init_ref_points(self, use_num_queries):
         self.refpoint_embed = nn.Embedding(use_num_queries, self.query_dim)
 
-    # =================================================================================================
-    # >>>> PERUBAHAN DI SINI <<<<
-    # =================================================================================================
-    def forward(self, samples: NestedTensor = None, targets: List = None, captions: List = None, **kw):
-        # Baris-baris ini harus menjorok ke dalam (indent)
-        if samples is None and "inputs" in kw:
-            samples = kw.pop("inputs")
-            
-        if captions is None:
-            if targets is None:
-                captions = kw.get("captions")
-            else:
-                captions = [t["caption"] for t in targets]
+    def forward(self, samples: NestedTensor, targets: List = None, **kw):
+        """The forward expects a NestedTensor, which consists of:
+           - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
+           - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
 
-        tokenized = self.tokenizer(captions, padding="longest", return_tensors="pt").to(
-            samples.device
-        )
+        It returns a dict with the following elements:
+           - "pred_logits": the classification logits (including no-object) for all queries.
+                            Shape= [batch_size x num_queries x num_classes]
+           - "pred_boxes": The normalized boxes coordinates for all queries, represented as
+                           (center_x, center_y, width, height). These values are normalized in [0, 1],
+                           relative to the size of each individual image (disregarding possible padding).
+                           See PostProcess for information on how to retrieve the unnormalized bounding box.
+           - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
+                            dictionnaries containing the two above keys for each decoder layer.
+        """
+        if targets is None:
+            captions = kw["captions"]
+        else:
+            captions = [t["caption"] for t in targets]
         # encoder texts
 
         tokenized = self.tokenizer(captions, padding="longest", return_tensors="pt").to(
@@ -850,4 +852,6 @@ def create_positive_map(tokenized, tokens_positive,cat_list,caption):
             continue
         # assert beg_pos is not None and end_pos is not None
         positive_map[j,beg_pos: end_pos + 1].fill_(1)
-    return positive_map
+    return positive_map 
+
+
