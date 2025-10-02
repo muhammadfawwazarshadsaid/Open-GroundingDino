@@ -12,12 +12,15 @@ print("=== Fix Alignment: COCO + ODVG ===")
 #  Load label_map
 with open(labelmap_path, "r") as f:
     label_map = json.load(f)
+
 id2cat = {int(k): v for k, v in label_map.items()}
 cat2id = {v: int(k) for k, v in label_map.items()}
 valid_classes = set(cat2id.keys())
 print(f"✅ Loaded {len(id2cat)} classes from label_map_fixed.json")
 
+# -------------------------
 # Step 1: Fix COCO
+# -------------------------
 with open(coco_src, "r") as f:
     coco = json.load(f)
 
@@ -39,7 +42,7 @@ new_annotations = []
 for ann in coco["annotations"]:
     old_id = ann["category_id"]
     if old_id in old2new:
-        ann["category_id"] = old2new[old_id]
+        ann["category_id"] = old2new[old_id]   # force sinkron
         new_annotations.append(ann)
     else:
         print(f"⚠️ Removing COCO annotation with unknown category_id {old_id}")
@@ -52,7 +55,9 @@ with open(coco_out, "w") as f:
 print(f"✅ COCO aligned → {coco_out}")
 print(f"📂 COCO after fix: {len(coco['categories'])} categories, {len(coco['annotations'])} annotations")
 
+# -------------------------
 # Step 2: Fix ODVG
+# -------------------------
 print(f"\n📂 ODVG before fix: {sum(1 for _ in open(odvg_src))} entries")
 cleaned = []
 with jsonlines.open(odvg_src) as reader:
@@ -62,23 +67,34 @@ with jsonlines.open(odvg_src) as reader:
 
             # case 1: dict with instances
             if isinstance(dets, dict) and "instances" in dets:
-                new_instances = [d for d in dets["instances"] if d.get("category") in valid_classes]
+                new_instances = []
+                for d in dets["instances"]:
+                    if d.get("category") in valid_classes:
+                        d["label"] = cat2id[d["category"]]  # <-- re-assign label
+                        new_instances.append(d)
                 if new_instances:
                     ex["detection"]["instances"] = new_instances
                     cleaned.append(ex)
 
             # case 2: list of dicts
             elif isinstance(dets, list) and all(isinstance(d, dict) for d in dets):
-                new_dets = [d for d in dets if d.get("category") in valid_classes]
+                new_dets = []
+                for d in dets:
+                    if d.get("category") in valid_classes:
+                        d["label"] = cat2id[d["category"]]  # <-- re-assign label
+                        new_dets.append(d)
                 if new_dets:
                     ex["detection"] = new_dets
                     cleaned.append(ex)
 
             # case 3: list of strings
             elif isinstance(dets, list) and all(isinstance(d, str) for d in dets):
-                new_dets = [d for d in dets if d in valid_classes]
+                new_dets = []
+                for d in dets:
+                    if d in valid_classes:
+                        new_dets.append({"category": d, "label": cat2id[d]})
                 if new_dets:
-                    ex["detection"] = new_dets
+                    ex["detection"] = {"instances": new_dets}
                     cleaned.append(ex)
 
 with jsonlines.open(odvg_out, "w") as writer:
