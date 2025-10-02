@@ -1,4 +1,4 @@
-# Save this file as data/tugas-akhir/config/cfg_odvg.py
+# Save this file as data/tugas-akhir/config/cfg_odvg_lora.py
 
 # --- DATA ---
 data_aug_scales = [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]
@@ -90,7 +90,7 @@ dice_loss_coef = 1.0
 focal_alpha = 0.25
 focal_gamma = 2.0
 
-# --- OTHER ---
+# --- OTHER / MISSED PARAMETERS ---
 batch_norm_type = 'FrozenBatchNorm2d'
 label_list = [
     "Auxiliary", "Base Plate", "Box", "Connection Power Supply",
@@ -99,6 +99,37 @@ label_list = [
     "Push Button Index Mechanism", "Roda Drawer", "Support Outgoing", "Top Plate"
 ]
 dn_scalar = 100
+decoder_sa_type = 'sa'
 matcher_type = 'HungarianMatcher'
 decoder_module_seq = ['sa', 'ca', 'ffn']
+nms_iou_threshold = -1
+num_select = 300
+dilation = False
+pdetr3_bbox_embed_diff_each_layer = False
+pdetr3_refHW = -1
+random_refpoints_xy = False
+fix_refpoints_hw = -1
+dabdetr_yolo_like_anchor_update = False
+dabdetr_deformable_encoder = False
+dabdetr_deformable_decoder = False
+use_deformable_box_attn = False
+box_attn_type = 'roi_align'
+dec_layer_number = None
+decoder_layer_noise = False
+dln_xy_noise = 0.2
+dln_hw_noise = 0.2
+add_channel_attention = False
+add_pos_value = False
+two_stage_pat_embed = 0
+two_stage_add_query_num = 0
+two_stage_learn_wh = False
+two_stage_default_hw = 0.05
+two_stage_keep_all_tokens = False
+masks = False
+dec_pred_class_embed_share = True
+match_unstable_error = True
+use_ema = False
+ema_decay = 0.9997
+ema_epoch = 0
+use_detached_boxes_dec_out = False
 use_coco_eval = False
