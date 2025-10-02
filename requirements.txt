@@ -18,3 +18,4 @@ colorlog
 jsonlines
 tqdm
 pandas
+openpyxl
