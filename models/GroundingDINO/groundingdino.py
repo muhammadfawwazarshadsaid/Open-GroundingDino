@@ -217,33 +217,19 @@ class GroundingDINO(nn.Module):
     # >>>> PERUBAHAN DI SINI <<<<
     # =================================================================================================
     def forward(self, samples: NestedTensor = None, targets: List = None, captions: List = None, **kw):
-        """The forward expects a NestedTensor, which consists of:
-           - samples.tensor: batched images, of shape [batch_size x 3 x H x W]
-           - samples.mask: a binary mask of shape [batch_size x H x W], containing 1 on padded pixels
-
-        It returns a dict with the following elements:
-           - "pred_logits": the classification logits (including no-object) for all queries.
-                            Shape= [batch_size x num_queries x num_classes]
-           - "pred_boxes": The normalized boxes coordinates for all queries, represented as
-                           (center_x, center_y, width, height). These values are normalized in [0, 1],
-                           relative to the size of each individual image (disregarding possible padding).
-                           See PostProcess for information on how to retrieve the unnormalized bounding box.
-           - "aux_outputs": Optional, only returned when auxilary losses are activated. It is a list of
-                            dictionnaries containing the two above keys for each decoder layer.
-        """
-        # Tambahan untuk kompatibilitas dengan LoRA/PEFT
+        # Baris-baris ini harus menjorok ke dalam (indent)
         if samples is None and "inputs" in kw:
-                samples = kw.pop("inputs")
+            samples = kw.pop("inputs")
+            
+        if captions is None:
+            if targets is None:
+                captions = kw.get("captions")
+            else:
+                captions = [t["caption"] for t in targets]
 
-            if captions is None:
-                if targets is None:
-                    captions = kw.get("captions") # Gunakan .get() agar lebih aman
-                else:
-                    captions = [t["caption"] for t in targets]
-
-            tokenized = self.tokenizer(captions, padding="longest", return_tensors="pt").to(
-                samples.device
-            )
+        tokenized = self.tokenizer(captions, padding="longest", return_tensors="pt").to(
+            samples.device
+        )
         # encoder texts
 
         tokenized = self.tokenizer(captions, padding="longest", return_tensors="pt").to(
