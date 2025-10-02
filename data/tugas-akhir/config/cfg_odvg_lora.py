@@ -1,3 +1,21 @@
+# ============================================
+# Config for LoRA fine-tuning GroundingDINO
+# ============================================
+
+# Dataset
+train_dataset = dict(
+    root="data/tugas-akhir/train/",
+    anno="data/tugas-akhir/annotations/train_odvg_final.jsonl",
+    label_map="data/tugas-akhir/config/label_map_final.json",
+    dataset_mode="odvg",
+)
+
+val_dataset = dict(
+    root="data/tugas-akhir/valid/",
+    anno="data/tugas-akhir/valid/_annotations.coco_final.json",
+    label_map="data/tugas-akhir/config/label_map_final.json",
+    dataset_mode="coco",
+)
 
 # Augmentasi
 data_aug_scales = [480, 512, 544, 576, 608, 640]
@@ -7,10 +25,10 @@ data_aug_scales2_crop = [384, 600]
 data_aug_scale_overlap = None
 
 # Training
-batch_size = 2     # T4 aman di batch kecil
-epochs = 35        # lumayan panjang biar LoRA sempet converge
-lr = 1e-4          # global LR
-lr_drop_list = [20, 30]
+batch_size = 2                 # kecil biar aman di T4
+epochs = 35                    # lebih panjang buat LoRA converge
+lr = 1e-4                      # global LR
+lr_drop_list = [20, 30]        # schedule turunin LR
 
 # Model
 modelname = 'groundingdino'
@@ -22,7 +40,7 @@ dec_layers = 6
 nheads = 8
 num_queries = 900
 
-# Loss
+# Loss weights
 set_cost_class = 1.0
 set_cost_bbox = 5.0
 set_cost_giou = 2.0
