@@ -233,12 +233,17 @@ class GroundingDINO(nn.Module):
         """
         # Tambahan untuk kompatibilitas dengan LoRA/PEFT
         if samples is None and "inputs" in kw:
-            samples = kw.pop("inputs")
-        if captions is None:
-            if targets is None:
-                captions = kw["captions"]
-            else:
-                captions = [t["caption"] for t in targets]
+                samples = kw.pop("inputs")
+
+            if captions is None:
+                if targets is None:
+                    captions = kw.get("captions") # Gunakan .get() agar lebih aman
+                else:
+                    captions = [t["caption"] for t in targets]
+
+            tokenized = self.tokenizer(captions, padding="longest", return_tensors="pt").to(
+                samples.device
+            )
         # encoder texts
 
         tokenized = self.tokenizer(captions, padding="longest", return_tensors="pt").to(
