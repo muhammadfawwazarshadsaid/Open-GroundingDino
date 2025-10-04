@@ -1,4 +1,3 @@
-
 data_aug_scales = [480, 512, 544, 576, 608, 640, 672, 704, 736, 768, 800]
 data_aug_max_size = 1333
 data_aug_scales2_resize = [400, 500, 600]
@@ -11,8 +10,8 @@ position_embedding = 'sine'
 pe_temperatureH = 20
 pe_temperatureW = 20
 return_interm_indices = [1, 2, 3]
-enc_layers = 6
-dec_layers = 6
+enc_layers = 4                   # dari 6 → 4
+dec_layers = 4                   # dari 6 → 4
 pre_norm = False
 dim_feedforward = 2048
 hidden_dim = 256
