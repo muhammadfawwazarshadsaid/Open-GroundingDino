@@ -34,7 +34,7 @@ dn_label_noise_ratio = 0.5
 dn_label_coef = 1.0
 dn_bbox_coef = 1.0
 embed_init_tgt = True
-dn_labelbook_size = 91
+dn_labelbook_size = 15
 max_text_len = 256
 text_encoder_type = '/mnt/lustre/longzuwei/GroundingDINO-main/bert-base-uncased'
 use_text_enhancer = True
@@ -114,7 +114,7 @@ ema_decay = 0.9997
 ema_epoch = 0
 use_detached_boxes_dec_out = False
 # use_coco_eval = True
-use_coco_eval = True
+use_coco_eval = False
 label_list = [
     "Auxiliary", "Base Plate", "Box", "Connection Power Supply", 
     "Door Handle Drawer", "Drawer Stopper", "Front Plate", "Handle Drawer",
