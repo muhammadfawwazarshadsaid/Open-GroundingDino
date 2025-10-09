@@ -1,7 +1,7 @@
 # Copyright (c) 2022 IDEA. All Rights Reserved.
 # ------------------------------------------------------------------------
 import argparse
-import datetime
+torch.serialization.add_safe_globals([argparse.Namespace])
 import json
 import random
 import time
@@ -286,12 +286,19 @@ def main(args):
     output_dir = Path(args.output_dir)
     if os.path.exists(os.path.join(args.output_dir, 'checkpoint.pth')):
         args.resume = os.path.join(args.output_dir, 'checkpoint.pth')
+    # if args.resume:
+    #     if args.resume.startswith('https'):
+    #         checkpoint = torch.hub.load_state_dict_from_url(
+    #             args.resume, map_location='cpu', check_hash=True)
+    #     else:
+    #         checkpoint = torch.load(args.resume, map_location='cpu')
+
     if args.resume:
         if args.resume.startswith('https'):
             checkpoint = torch.hub.load_state_dict_from_url(
                 args.resume, map_location='cpu', check_hash=True)
-        else:
-            checkpoint = torch.load(args.resume, map_location='cpu')
+    else:
+        checkpoint = torch.load(args.resume, map_location='cpu', weights_only=False)
         model_without_ddp.load_state_dict(clean_state_dict(checkpoint['model']),strict=False)
 
 
