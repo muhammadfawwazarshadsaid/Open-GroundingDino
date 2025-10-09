@@ -1,6 +1,7 @@
 # Copyright (c) 2022 IDEA. All Rights Reserved.
 # ------------------------------------------------------------------------
 import argparse
+import datetime
 import json
 import random
 import time
@@ -9,7 +10,6 @@ import os, sys
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, DistributedSampler
-torch.serialization.add_safe_globals([argparse.Namespace])
 
 from util.get_param_dicts import get_param_dict
 from util.logger import setup_logger
@@ -22,11 +22,7 @@ from datasets import build_dataset, get_coco_api_from_dataset
 from engine import evaluate, train_one_epoch
 
 from groundingdino.util.utils import clean_state_dict
-try:
-    from peft import get_peft_model, LoraConfig, TaskType
-    _PEFT_AVAILABLE = True
-except Exception:
-    _PEFT_AVAILABLE = False
+
 
 def get_args_parser():
     parser = argparse.ArgumentParser('Set transformer detector', add_help=False)
@@ -73,16 +69,6 @@ def get_args_parser():
     parser.add_argument("--local-rank", type=int, help='local rank for DistributedDataParallel')
     parser.add_argument('--amp', action='store_true',
                         help="Train with mixed precision")
-    
-    # --- LoRA / PEFT params ---
-    parser.add_argument('--use_lora', action='store_true', help='Enable LoRA fine-tuning via PEFT')
-    parser.add_argument('--lora_r', type=int, default=8, help='LoRA rank')
-    parser.add_argument('--lora_alpha', type=int, default=16, help='LoRA alpha (scaling)')
-    parser.add_argument('--lora_dropout', type=float, default=0.1, help='LoRA dropout')
-    parser.add_argument('--lora_target', type=str, default='all-linear',
-                        help="PEFT target modules. Try 'all-linear' (PEFT>=0.14). "
-                             "Fallback: comma-separated substrings, e.g. 'q_proj,k_proj,v_proj,out_proj,linear1,linear2'")
-
     return parser
 
 
@@ -96,53 +82,9 @@ def build_model_main(args):
     return model, criterion, postprocessors
 
 
-def _apply_lora_if_enabled(args, model, logger=None):
-    if not getattr(args, 'use_lora', False):
-        return model
-
-    if not _PEFT_AVAILABLE:
-        raise RuntimeError("PEFT is not installed. Run: pip install peft accelerate bitsandbytes")
-
-    # TaskType: FEATURE_EXTRACTION cocok untuk vision backbones/transformer
-    # target_modules:
-    # - Jika PEFT baru: 'all-linear' akan menambahkan LoRA ke semua nn.Linear
-    # - Jika versi lama: gunakan daftar substrings (dipisah koma)
-    target_modules = args.lora_target
-    if target_modules != 'all-linear':
-        target_modules = [s.strip() for s in target_modules.split(',') if s.strip()]
-
-    lora_cfg = LoraConfig(
-        task_type=TaskType.FEATURE_EXTRACTION,
-        r=args.lora_r,
-        lora_alpha=args.lora_alpha,
-        lora_dropout=args.lora_dropout,
-        target_modules=target_modules
-    )
-
-    if logger:
-        logger.info(f"Applying LoRA with config: r={args.lora_r}, alpha={args.lora_alpha}, "
-                    f"dropout={args.lora_dropout}, target={args.lora_target}")
-
-    peft_model = get_peft_model(model, lora_cfg)
-
-    # BEKU-kan semua parameter base, LoRA akan otomatis requires_grad=True
-    for n, p in peft_model.named_parameters():
-        # PEFT biasanya menandai adapter param dengan '.lora_'
-        if 'lora_' in n:
-            p.requires_grad_(True)
-        else:
-            p.requires_grad_(False)
-
-    # Info jumlah param yang di-train
-    if logger:
-        trainable = sum(p.numel() for p in peft_model.parameters() if p.requires_grad)
-        total = sum(p.numel() for p in peft_model.parameters())
-        logger.info(f"LoRA enabled: trainable params {trainable}/{total} "
-                    f"({100.0*trainable/total:.4f}%)")
-
-    return peft_model
-
 def main(args):
+    
+
     utils.setup_distributed(args)
     # load cfg file and update the args
     print("Loading config file from {}".format(args.config_file))
@@ -201,11 +143,8 @@ def main(args):
     logger.debug("build model ... ...")
     model, criterion, postprocessors = build_model_main(args)
     wo_class_error = False
-    model = _apply_lora_if_enabled(args, model, logger=logger)
-
     model.to(device)
     logger.debug("build model, done.")
-
 
 
     model_without_ddp = model
@@ -217,12 +156,8 @@ def main(args):
     logger.info('number of params:'+str(n_parameters))
     logger.info("params before freezing:\n"+json.dumps({n: p.numel() for n, p in model.named_parameters() if p.requires_grad}, indent=2))
 
-    # Jika LoRA aktif, abaikan get_param_dict khusus dan ambil param yang trainable saja
-    if getattr(args, 'use_lora', False):
-        param_dicts = [{'params': [p for p in model.parameters() if p.requires_grad], 'lr': args.lr}]
-    else:
-        param_dicts = get_param_dict(args, model_without_ddp)
-
+    param_dicts = get_param_dict(args, model_without_ddp)
+    
     # freeze some layers
     if args.freeze_keywords is not None:
         for name, parameter in model.named_parameters():
@@ -286,19 +221,12 @@ def main(args):
     output_dir = Path(args.output_dir)
     if os.path.exists(os.path.join(args.output_dir, 'checkpoint.pth')):
         args.resume = os.path.join(args.output_dir, 'checkpoint.pth')
-    # if args.resume:
-    #     if args.resume.startswith('https'):
-    #         checkpoint = torch.hub.load_state_dict_from_url(
-    #             args.resume, map_location='cpu', check_hash=True)
-    #     else:
-    #         checkpoint = torch.load(args.resume, map_location='cpu')
-
     if args.resume:
         if args.resume.startswith('https'):
             checkpoint = torch.hub.load_state_dict_from_url(
                 args.resume, map_location='cpu', check_hash=True)
-    else:
-        checkpoint = torch.load(args.resume, map_location='cpu', weights_only=False)
+        else:
+            checkpoint = torch.load(args.resume, map_location='cpu')
         model_without_ddp.load_state_dict(clean_state_dict(checkpoint['model']),strict=False)
 
 
