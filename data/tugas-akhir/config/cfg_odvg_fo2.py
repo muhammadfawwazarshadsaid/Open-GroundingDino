@@ -48,15 +48,16 @@ use_text_cross_attention = True
 text_dropout = 0.0
 fusion_dropout = 0.0
 # fusion_droppath = 0.1
-fusion_droppath = 0.1                      # MODIFIKASI: Sedikit diturunkan untuk mengurangi regularisasi
+fusion_droppath = 0.2
 sub_sentence_present = True
-max_labels = 50
-# lr = 0.0001
-lr = 0.00005                               # Anda juga bisa coba naikkan kembali ke 0.0001 jika performa masih lambat naik
-backbone_freeze_keywords = None
-# MODIFIKASI: Hapus 'backbone.0' dan 'bert' agar bisa di fine-tune dengan LR kecil
+max_labels = 50                               # pos + neg
+# lr = 0.0001                                   # base learning rate
+lr = 0.00005                                  # base learning rate
+backbone_freeze_keywords = None               # only for gdino backbone
+# freeze_keywords = ['backbone.0', 'bert']      # for whole model, e.g. ['backbone.0', 'bert'] for freeze visual encoder and text encoder
+# lr_backbone = 1e-04                           # specific learning rate
 freeze_keywords = []
-lr_backbone = 1e-05                        # MODIFIKASI: LR untuk backbone & text encoder, HARUS lebih kecil dari lr utama
+lr_backbone = 1e-05   
 lr_backbone_names = ['backbone.0', 'bert']
 lr_linear_proj_mult = 1e-05
 lr_linear_proj_names = ['ref_point_head', 'sampling_offsets']
@@ -64,13 +65,14 @@ weight_decay = 0.0001
 param_dict_type = 'ddetr_in_mmdet'
 ddetr_lr_param = False
 epochs = 100
-# lr_drop = 4                              # MODIFIKASI: Dinonaktifkan karena terlalu agresif
+lr_drop = 4
 save_checkpoint_interval = 1
 # clip_max_norm = 0.1
 clip_max_norm = 0.05
 onecyclelr = False
-multi_step_lr = False
-lr_drop_list = [40, 70]                    # MODIFIKASI: Diaktifkan. LR akan turun pada epoch 40 dan 70.
+multi_step_lr = True
+lr_drop_list = [40, 70]
+# lr_drop_list = [4, 8]
 frozen_weights = None
 dilation = False
 pdetr3_bbox_embed_diff_each_layer = False
@@ -127,9 +129,9 @@ ema_epoch = 2
 use_detached_boxes_dec_out = False
 use_coco_eval = False
 label_list = [
-    "Auxiliary", "Base Plate", "Box", "Connection Power Supply",
+    "Auxiliary", "Base Plate", "Box", "Connection Power Supply", 
     "Door Handle Drawer", "Drawer Stopper", "Front Plate", "Handle Drawer",
-    "Index Mechanism", "Locking Mechanism", "Mounting Component",
+    "Index Mechanism", "Locking Mechanism", "Mounting Component", 
     "Push Button Index Mechanism", "Roda Drawer", "Support Outgoing", "Top Plate"
 ]
 dn_scalar = 100
