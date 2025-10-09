@@ -1,7 +1,6 @@
 # Copyright (c) 2022 IDEA. All Rights Reserved.
 # ------------------------------------------------------------------------
 import argparse
-torch.serialization.add_safe_globals([argparse.Namespace])
 import json
 import random
 import time
@@ -10,6 +9,7 @@ import os, sys
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, DistributedSampler
+torch.serialization.add_safe_globals([argparse.Namespace])
 
 from util.get_param_dicts import get_param_dict
 from util.logger import setup_logger
