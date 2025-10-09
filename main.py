@@ -9,6 +9,8 @@ from pathlib import Path
 import os, sys
 import numpy as np
 import torch
+torch.serialization.add_safe_globals([argparse.Namespace])
+
 from torch.utils.data import DataLoader, DistributedSampler
 
 from util.get_param_dicts import get_param_dict
